@@ -1,24 +1,17 @@
 #include <Arduino.h>
 
-int ReceivedMessage = 0;
-
+String ReceivedMessage = "";
 
 void setup() {
-    Serial.begin(115200);
-    pinMode(LED_BUILTIN, OUTPUT);
+    Serial.begin(115200); //Begin serial link
 }
 
 void loop()
 {
 
-  if (Serial.available() == -1) // Test if the buffer is empty
+  if (Serial.available()) // Test if the buffer is empty
   {
-
-  }
-  else
-  {
-    ReceivedMessage = Serial.read(); // Read buffer
-    Serial.print("Message : ");
-    Serial.println(ReceivedMessage);
+    ReceivedMessage = Serial.readString(); // Read buffer
+    Serial.print("Message : ["+ReceivedMessage+"]"); //Send received message to serial link
   }
 }
