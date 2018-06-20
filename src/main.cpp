@@ -50,5 +50,9 @@ void uneFonction(){
 }
 
 void uneSecondeFonction(){
+
+}
+
+void uneQuatriemeFonction(){
   
 }
