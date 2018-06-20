@@ -42,5 +42,9 @@ void loop()
 }
 
 void uneFonction(){
+
+}
+
+void uneDeuxiemeFonction(){
   
 }
