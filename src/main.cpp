@@ -12,7 +12,6 @@ void setup() {
 void loop()
 {
   ReceivedMessage = "";
-  delay(1);
 
   if (Serial.available()) // Test if the buffer is empty
   {
@@ -25,14 +24,12 @@ void loop()
     }
     else if (ReceivedMessage.startsWith("LT_")) // Test if is a LT command
     {
-      Serial.println("LT_OK");
       ReceivedMessage.replace("LT_", "");
       LTValue = ReceivedMessage;
       Serial.println("LT Value = ["+LTValue+"]");
     }
     else if (ReceivedMessage.startsWith("RT_")) // Test if is a RT command
     {
-      Serial.println("RT_OK");
       ReceivedMessage.replace("RT_", "");
       RTValue = ReceivedMessage;
       Serial.println("RT Value = ["+RTValue+"]");
@@ -41,6 +38,5 @@ void loop()
     {
       Serial.println("Je ne comprends rien ^^");
     }
-    delay(10);
   }
 }
