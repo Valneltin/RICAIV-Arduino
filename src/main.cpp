@@ -41,12 +41,6 @@ void loop()
   }
 }
 
-<<<<<<< HEAD
-void IR()
-{
-
-=======
-void Gyro(){
+void uneFonction(){
   
->>>>>>> f033b158412135d27785983fa929b776588e17d2
 }
