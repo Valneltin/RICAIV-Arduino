@@ -34,6 +34,10 @@ void loop()
       RTValue = ReceivedMessage;
       Serial.println("RT Value = ["+RTValue+"]");
     }
+    else if (ReceivedMessage.startsWith("Sensor"))
+    {
+      Serial.println("J'envoie les mesures");
+    }
     else // This information is not acceptable
     {
       Serial.println("Je ne comprends rien ^^");
@@ -42,5 +46,5 @@ void loop()
 }
 
 void uneFonction(){
-  
+
 }
