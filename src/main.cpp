@@ -2,8 +2,8 @@
 
 /***  VARIABLES ***/
 
-String ReceivedMessage = "";
-char buffer[]= "";
+char ReceivedMessage [20];
+char buffer;
 
 int leftarmforward;
 int leftarmbackward;
@@ -14,7 +14,7 @@ int leftshoulderbackward;
 int rightshoulderforward;
 int rightshoulderbackward;
 int leftmotorspeed;
-int rightmotorseed;
+int rightmotorspeed;
 
 /*** MOTORS VARIABLES ***/
 
@@ -34,18 +34,18 @@ int speedforwardLS = 255;
 int speedbackwardLS = 1;
 // Right Schoulder
 int pwmRS = 5;
-int dirRS = 24;
+int dirRS = 25;
 int speedforwardRS = 255;
 int speedbackwardRS = 1;
 
 // Left Arm
 int pwmLA = 6;
-int dirLA = 25;
+int dirLA = 26;
 int speedforwardLA = 255;
 int speedbackwardLA = 1;
 // Right Arm
 int pwmRA = 7;
-int dirRA = 26;
+int dirRA = 27;
 int speedforwardRA = 255;
 int speedbackwardRA = 1;
 
@@ -104,92 +104,122 @@ void motor(int pinpwm, int pindir, int duty_cycle ){
 void loop()
 {
 
-  ReceivedMessage = ""; // Reset ReceivedMessage
+  for(int j=0;j<20;j++)
+  {
+    ReceivedMessage [j] = "";
+  }
 
   if (Serial.available()) // Test if the buffer is empty
   {
+    for (int i=0; i<20; i++){
+      buffer = Serial.read();
+      ReceivedMessage [i] = buffer; // Read buffer
+    }
 
-    ReceivedMessage = Serial.readString();            // Read buffer
-    Serial.print("Message : ["+ReceivedMessage+"]");  // Send received message to serial link
 
-    ReceivedMessage.toCharArray(buffer,30); // Convert String to Char
-    sscanf(buffer, "%d %d %d %d %d %d %d %d %d %d", &leftarmforward, &leftarmbackward, &rightarmforward, &rightarmbackward, &leftshoulderforward, &leftshoulderbackward, &rightshoulderforward, &rightshoulderbackward, &leftmotorspeed, &rightmotorseed);
+    Serial.print("Message : [");
+    Serial.print(ReceivedMessage);
+    Serial.print("]");  // Send received message to serial link
+
+    leftarmforward = 0;
+    leftarmbackward = 0;
+    rightarmforward = 0;
+    rightarmbackward = 3;
+    leftshoulderforward = 0;
+    leftshoulderbackward = 0;
+    rightshoulderforward = 0;
+    rightshoulderbackward = 0;
+    leftmotorspeed = 128;
+    rightmotorspeed = 128;
+
+    sscanf(ReceivedMessage, "%d %d %d %d %d %d %d %d %d %d", &leftarmforward, &leftarmbackward, &rightarmforward, &rightarmbackward, &leftshoulderforward, &leftshoulderbackward, &rightshoulderforward, &rightshoulderbackward, &leftmotorspeed, &rightmotorspeed);
+
+    Serial.println(leftarmforward);
+    Serial.println(leftarmbackward);
+    Serial.println(rightarmforward);
+    Serial.println(rightarmbackward);
+    Serial.println(leftshoulderforward);
+    Serial.println(leftshoulderbackward);
+    Serial.println(rightshoulderforward);
+    Serial.println(rightshoulderbackward);
+    Serial.println(leftmotorspeed);
+    Serial.println(rightmotorspeed);
 
     /*** CONTROL LEFT ARM ***/
     if (leftarmforward == 1 && leftarmbackward == 0){       // Left arm go forward
       motor(pwmLA, dirLA, speedforwardLA);
-      Serial.print("LA : FORWARD");
+      //Serial.print("LA : FORWARD");
     }
     else if (leftarmforward == 0 && leftarmbackward == 1){  // Left arm go backward
       motor(pwmLA, dirLA, speedbackwardLA);
-      Serial.print("LA : BACKWARD");
+      //Serial.print("LA : BACKWARD");
     }
     else if (leftarmforward == 0 && leftarmbackward == 0){  // Left arm don't move
       motor(pwmLA, dirLA, 128);
-      Serial.print("LA : STOP 1");
+      //Serial.print("LA : STOP 1");
     }
     else if (leftarmforward == 1 && leftarmbackward == 1){  // Left arm don't move because two buttons are pressed
       motor(pwmLA, dirLA, 128);
-      Serial.print("LA : STOP 2");
+      //Serial.print("LA : STOP 2");
     }
 
     /*** CONTROL RIGHT ARM ***/
     if (rightarmforward == 1 && rightarmbackward == 0){       // Right arm go forward
       motor(pwmRA, dirRA, speedforwardRA);
-      Serial.print("RA : FORWARD");
+      //Serial.print("RA : FORWARD");
     }
     else if (rightarmforward == 0 && rightarmbackward == 1){  // Right arm go backward
       motor(pwmRA, dirRA, speedbackwardRA);
-      Serial.print("RA : BACKWARD");
+      //Serial.print("RA : BACKWARD");
     }
     else if (rightarmforward == 0 && rightarmbackward == 0){  // RIght arm don't move
       motor(pwmRA, dirRA, 128);
-      Serial.print("RA : STOP 1");
+      //Serial.print("RA : STOP 1");
     }
     else if (rightarmforward == 1 && rightarmbackward == 1){  // Right arm don't move because two buttons are pressed
       motor(pwmRA, dirRA, 128);
-      Serial.print("RA : STOP 2");
+      //Serial.print("RA : STOP 2");
     }
 
     /*** CONTROL LEFT SHOULDER ***/
     if (leftshoulderforward == 1 && leftshoulderbackward == 0){       // Left shoulder go forward
       motor(pwmLS, dirLS, speedforwardLS);
-      Serial.print("LS : FORWARD");
+      //Serial.print("LS : FORWARD");
     }
     else if (leftshoulderforward == 0 && leftshoulderbackward == 1){  // Left shoulder go backward
       motor(pwmLS, dirLS, speedbackwardLS);
-      Serial.print("LS : BACKWARD");
+      //Serial.print("LS : BACKWARD");
     }
     else if (leftshoulderforward == 0 && leftshoulderbackward == 0){  // Left shoulder don't move
       motor(pwmLS, dirLS, 128);
-      Serial.print("LS : STOP 1");
+      //Serial.print("LS : STOP 1");
     }
     else if (leftshoulderforward == 1 && leftshoulderbackward == 1){  // Left shoulder don't move because two buttons are pressed
       motor(pwmLS, dirLS, 128);
-      Serial.print("LS : STOP 2");
+      //Serial.print("LS : STOP 2");
     }
 
     /*** CONTROL RIGHT SHOULDER ***/
     if (rightshoulderforward == 1 && rightshoulderbackward == 0){       // Right shoulder go forward
       motor(pwmRS, dirRS, speedforwardRS);
-      Serial.print("RS : FORWARD");
+      //Serial.print("RS : FORWARD");
     }
     else if (rightshoulderforward == 0 && rightshoulderbackward == 1){  // Right shoulder go backward
       motor(pwmRS, dirRS, speedbackwardRS);
-      Serial.print("RS : BACKWARD");
+      //Serial.print("RS : BACKWARD");
     }
     else if (rightshoulderforward == 0 && rightshoulderbackward == 0){  // Right shoulder don't move
       motor(pwmRS, dirRS, 128);
-      Serial.print("RS : STOP 1");
+      //Serial.print("RS : STOP 1");
     }
     else if (rightshoulderforward == 1 && rightshoulderbackward == 1){  // Right shoulder don't move because two buttons are pressed
       motor(pwmRS, dirRS, 128);
-      Serial.print("RS : STOP 2");
+      //Serial.print("RS : STOP 2");
     }
 
     /*** WHEEL MOTOR ***/
     duty_cycle_LM = dutyCycleCalcul(leftmotorspeed);  // Calcul duty cycle for left motor
-    duty_cycle_RM = dutyCycleCalcul(rightmotorseed);  // Calcul duty cycle for right motor
+    duty_cycle_RM = dutyCycleCalcul(rightmotorspeed);  // Calcul duty cycle for right motor
     motor(pwmLM, dirLM, duty_cycle_LM);               // Set speed to left motor
     motor(pwmRM, dirRM, duty_cycle_RM);               // Set speed to right motor
 
