@@ -2,8 +2,8 @@
 
 /***  VARIABLES ***/
 
-char ReceivedMessage [20];
-char buffer;
+String ReceivedMessage;
+char buffer [21];
 
 int leftarmforward;
 int leftarmbackward;
@@ -104,35 +104,28 @@ void motor(int pinpwm, int pindir, int duty_cycle ){
 void loop()
 {
 
-  for(int j=0;j<20;j++)
+  /*for(int j=0;j<20;j++)
   {
     ReceivedMessage [j] = "";
-  }
+  }*/
 
   if (Serial.available()) // Test if the buffer is empty
   {
-    for (int i=0; i<20; i++){
+    /*for (int i=0; i<20; i++){
       buffer = Serial.read();
       ReceivedMessage [i] = buffer; // Read buffer
-    }
-
+    }*/
+    ReceivedMessage = Serial.readStringUntil('e');
 
     Serial.print("Message : [");
     Serial.print(ReceivedMessage);
-    Serial.print("]");  // Send received message to serial link
+    Serial.println("]");  // Send received message to serial link
 
-    leftarmforward = 0;
-    leftarmbackward = 0;
-    rightarmforward = 0;
-    rightarmbackward = 3;
-    leftshoulderforward = 0;
-    leftshoulderbackward = 0;
-    rightshoulderforward = 0;
-    rightshoulderbackward = 0;
-    leftmotorspeed = 128;
-    rightmotorspeed = 128;
+    ReceivedMessage.toCharArray(buffer, ReceivedMessage.length());
 
-    sscanf(ReceivedMessage, "%d %d %d %d %d %d %d %d %d %d", &leftarmforward, &leftarmbackward, &rightarmforward, &rightarmbackward, &leftshoulderforward, &leftshoulderbackward, &rightshoulderforward, &rightshoulderbackward, &leftmotorspeed, &rightmotorspeed);
+    delay (10);
+
+    sscanf(buffer, "%d%d%d%d%d%d%d%d%d%d e", &leftarmforward, &leftarmbackward, &rightarmforward, &rightarmbackward, &leftshoulderforward, &leftshoulderbackward, &rightshoulderforward, &rightshoulderbackward, &leftmotorspeed, &rightmotorspeed);
 
     Serial.println(leftarmforward);
     Serial.println(leftarmbackward);
@@ -155,11 +148,11 @@ void loop()
       //Serial.print("LA : BACKWARD");
     }
     else if (leftarmforward == 0 && leftarmbackward == 0){  // Left arm don't move
-      motor(pwmLA, dirLA, 128);
+      motor(pwmLA, dirLA, 127);
       //Serial.print("LA : STOP 1");
     }
     else if (leftarmforward == 1 && leftarmbackward == 1){  // Left arm don't move because two buttons are pressed
-      motor(pwmLA, dirLA, 128);
+      motor(pwmLA, dirLA, 127);
       //Serial.print("LA : STOP 2");
     }
 
@@ -173,11 +166,11 @@ void loop()
       //Serial.print("RA : BACKWARD");
     }
     else if (rightarmforward == 0 && rightarmbackward == 0){  // RIght arm don't move
-      motor(pwmRA, dirRA, 128);
+      motor(pwmRA, dirRA, 127);
       //Serial.print("RA : STOP 1");
     }
     else if (rightarmforward == 1 && rightarmbackward == 1){  // Right arm don't move because two buttons are pressed
-      motor(pwmRA, dirRA, 128);
+      motor(pwmRA, dirRA, 127);
       //Serial.print("RA : STOP 2");
     }
 
@@ -191,11 +184,11 @@ void loop()
       //Serial.print("LS : BACKWARD");
     }
     else if (leftshoulderforward == 0 && leftshoulderbackward == 0){  // Left shoulder don't move
-      motor(pwmLS, dirLS, 128);
+      motor(pwmLS, dirLS, 127);
       //Serial.print("LS : STOP 1");
     }
     else if (leftshoulderforward == 1 && leftshoulderbackward == 1){  // Left shoulder don't move because two buttons are pressed
-      motor(pwmLS, dirLS, 128);
+      motor(pwmLS, dirLS, 127);
       //Serial.print("LS : STOP 2");
     }
 
@@ -209,11 +202,11 @@ void loop()
       //Serial.print("RS : BACKWARD");
     }
     else if (rightshoulderforward == 0 && rightshoulderbackward == 0){  // Right shoulder don't move
-      motor(pwmRS, dirRS, 128);
+      motor(pwmRS, dirRS, 127);
       //Serial.print("RS : STOP 1");
     }
     else if (rightshoulderforward == 1 && rightshoulderbackward == 1){  // Right shoulder don't move because two buttons are pressed
-      motor(pwmRS, dirRS, 128);
+      motor(pwmRS, dirRS, 127);
       //Serial.print("RS : STOP 2");
     }
 
@@ -223,6 +216,25 @@ void loop()
     motor(pwmLM, dirLM, duty_cycle_LM);               // Set speed to left motor
     motor(pwmRM, dirRM, duty_cycle_RM);               // Set speed to right motor
 
+  }
+  else {
+    leftarmforward = 1;
+    leftarmbackward = 1;
+    rightarmbackward = 1;
+    rightarmforward = 1;
+    leftshoulderforward = 1;
+    leftshoulderbackward = 1;
+    rightshoulderforward = 1;
+    rightshoulderbackward = 1;
+    leftmotorspeed = 324;
+    rightmotorspeed = 324;
+
+    ReceivedMessage = "";
+
+    for(int j=0;j<20;j++)
+    {
+      buffer [j] = 0;
+    }
   }
 }
 
