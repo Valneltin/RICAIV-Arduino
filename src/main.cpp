@@ -1,6 +1,6 @@
 #include <Arduino.h>
 
-/***  VARIABLES ***/
+/*___________ VARIABLES ___________*/
 
 String ReceivedMessage;
 char buffer [25];
@@ -49,10 +49,26 @@ int dirRA = 27;
 int speedforwardRA = 1000;
 int speedbackwardRA = -1000;
 
+/*** SENSORS VARIABLES ***/
+int pinFC1 = A0;
+int powerFC1 = 30;
+int stateFC1 = 0;
+
+int pinFC2 = A1;
+int powerFC2 = 31;
+int stateFC2 = 0;
+
+int pinFC3 = A2;
+int powerFC3 = 32;
+int stateFC3 = 0;
+
+int pinFC4 = A3;
+int powerFC4 = 33;
+int stateFC4 = 0;
 
 /*___________ SET UP ___________*/
 void setup() {
-    Serial.begin(115200); // Begin serial link
+    Serial.begin(9600); // Begin serial link
 
     pinMode(pwmLM, OUTPUT);
     pinMode(dirLM, OUTPUT);
@@ -71,6 +87,11 @@ void setup() {
 
     pinMode(pwmRA, OUTPUT);
     pinMode(dirRA, OUTPUT);
+
+    pinMode(powerFC1,OUTPUT);
+    pinMode(powerFC2,OUTPUT);
+    pinMode(powerFC3,OUTPUT);
+    pinMode(powerFC4,OUTPUT);
 }
 
 
@@ -89,33 +110,54 @@ void motor(int pinpwm, int pindir, int speed){
     speed = map(speed, 0, 1000, 0, 255);
     analogWrite(pinpwm, speed);
   }
-
 }
 
 
 /*___________ MAIN CODE ___________*/
 void loop()
 {
+  // ARM SENSORS
+  stateFC1 = analogRead(pinFC1);
+  stateFC2 = analogRead(pinFC2);
+  stateFC3 = analogRead(pinFC3);
+  stateFC4 = analogRead(pinFC4);
 
+  // READ SERIAL
   if (Serial.available()) // Test if the buffer is empty
   {
 
     ReceivedMessage = Serial.readStringUntil('e'); // Read serial port until character "e"
 
-    Serial.print("Message : [");
+    /*Serial.print("Message [");
     Serial.print(ReceivedMessage);
-    Serial.println("]");  // Send received message to serial link
+    Serial.println("]");*/
+    Serial.println(String(stateFC1)+"t"+String(stateFC2)+"t"+String(stateFC3)+"t"+String(stateFC4)+"t"+"111t222t333t444t555");
+
 
     ReceivedMessage.toCharArray(buffer, ReceivedMessage.length()); // Convert ReceivedMessage in char array
 
     sscanf(buffer, "%d%d%d%d%d%d%d%d%d%d e", &leftarmforward, &leftarmbackward, &rightarmforward, &rightarmbackward, &leftshoulderforward, &leftshoulderbackward, &rightshoulderforward, &rightshoulderbackward, &leftmotorspeed, &rightmotorspeed);
 
-    /*** CONTROL LEFT ARM ***/
+    // CONTROL LEFT ARM
     if (leftarmforward == 1 && leftarmbackward == 0){       // Left arm go forward
-      motor(pwmLA, dirLA, speedforwardLA);
+      if(stateFC1 == 0) // Impossible to go forward because limit sensor is pressed
+      {
+        motor(pwmLA, dirLA, 0); //Stop arm to go forward
+      }
+      else
+      {
+        motor(pwmLA, dirLA, speedforwardLA); // Go forward
+      }
     }
     else if (leftarmforward == 0 && leftarmbackward == 1){  // Left arm go backward
-      motor(pwmLA, dirLA, speedbackwardLA);
+      if (stateFC2 == 0) // Impossible to go backward because limit sensor is pressed
+      {
+        motor(pwmLA, dirLA, 0); // Stop arm to go backward
+      }
+      else
+      {
+        motor(pwmLA, dirLA, speedbackwardLA); // Go backward
+      }
     }
     else if (leftarmforward == 0 && leftarmbackward == 0){  // Left arm don't move
       motor(pwmLA, dirLA, 0);
@@ -124,12 +166,26 @@ void loop()
       motor(pwmLA, dirLA, 0);
     }
 
-    /*** CONTROL RIGHT ARM ***/
+    // CONTROL RIGHT ARM
     if (rightarmforward == 1 && rightarmbackward == 0){       // Right arm go forward
-      motor(pwmRA, dirRA, speedforwardRA);
+      if (stateFC3 == 0) // Impossible to go forward because limit sensor is pressed
+      {
+        motor(pwmRA, dirRA, 0); // Stop arm to go forward
+      }
+      else
+      {
+        motor(pwmRA, dirRA, speedforwardRA); // Go forward
+      }
     }
     else if (rightarmforward == 0 && rightarmbackward == 1){  // Right arm go backward
-      motor(pwmRA, dirRA, speedbackwardRA);
+      if (stateFC4 == 0) // Impossible to go backward because limit sensor is pressed
+      {
+        motor(pwmRA, dirRA, 0); // Stop arm to go backward
+      }
+      else
+      {
+        motor(pwmRA, dirRA, speedbackwardRA); // Go backward
+      }
     }
     else if (rightarmforward == 0 && rightarmbackward == 0){  // RIght arm don't move
       motor(pwmRA, dirRA, 0);
@@ -138,7 +194,7 @@ void loop()
       motor(pwmRA, dirRA, 0);
     }
 
-    /*** CONTROL LEFT SHOULDER ***/
+    // CONTROL LEFT SHOULDER
     if (leftshoulderforward == 1 && leftshoulderbackward == 0){       // Left shoulder go forward
       motor(pwmLS, dirLS, speedforwardLS);
     }
@@ -152,7 +208,7 @@ void loop()
       motor(pwmLS, dirLS, 0);
     }
 
-    /*** CONTROL RIGHT SHOULDER ***/
+    //CONTROL RIGHT SHOULDER
     if (rightshoulderforward == 1 && rightshoulderbackward == 0){       // Right shoulder go forward
       motor(pwmRS, dirRS, speedforwardRS);
     }
@@ -166,13 +222,13 @@ void loop()
       motor(pwmRS, dirRS, 0);
     }
 
-    /*** WHEEL MOTOR ***/
+    // WHEEL MOTOR
     motor(pwmLM, dirLM, leftmotorspeed);  // Set speed to left motor
     motor(pwmRM, dirRM, rightmotorspeed); // Set speed to right motor
-
   }
-  else {
-    /*** Reset value if not receive value from serial port ***/
+
+  else // Reset value of speed if not receive value from serial port
+  {
     leftarmforward = 0;
     leftarmbackward = 0;
     rightarmbackward = 0;
@@ -184,9 +240,9 @@ void loop()
     leftmotorspeed = 0;
     rightmotorspeed = 0;
 
-    ReceivedMessage = "";
+    ReceivedMessage = ""; // Reset ReceivedMessage
 
-    for(int j=0;j<20;j++)
+    for(int j=0;j<20;j++) // Reset buffer
     {
       buffer [j] = 0;
     }
