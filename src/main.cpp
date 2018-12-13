@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <Wire.h>
 
 /*___________ VARIABLES ___________*/
 
@@ -21,11 +22,9 @@ int rightmotorspeed;
 // Left Motor
 int pwmLM = 2;
 int dirLM = 22;
-int duty_cycle_LM = 0;
 // Right Motor
 int pwmRM = 3;
 int dirRM = 23;
-int duty_cycle_RM = 0;
 
 // Left Schoulder
 int pwmLS = 4;
@@ -50,6 +49,9 @@ int speedforwardRA = 1000;
 int speedbackwardRA = -1000;
 
 /*** SENSORS VARIABLES ***/
+
+int stateFC[4]={1,1,1,1};
+
 int pinFC1 = A0;
 int powerFC1 = 30;
 int stateFC1 = 0;
@@ -68,7 +70,11 @@ int stateFC4 = 0;
 
 /*___________ SET UP ___________*/
 void setup() {
+
     Serial.begin(9600); // Begin serial link
+    Wire.begin();       // Begin wire link
+    //compass.init();
+    //compass.enableDefault();
 
     pinMode(pwmLM, OUTPUT);
     pinMode(dirLM, OUTPUT);
@@ -97,8 +103,9 @@ void setup() {
 
 /*___________ SUB FUNCTION ___________*/
 
-/*** Set value of speed for motors in function of speed ***/
-void motor(int pinpwm, int pindir, int speed){
+// SET MOTOR SPEED AND DIRECTION
+void motor(int pinpwm, int pindir, int speed)
+{
   if (speed < 0){
     digitalWrite(pindir, LOW);
     speed = -speed;
@@ -112,7 +119,6 @@ void motor(int pinpwm, int pindir, int speed){
   }
 }
 
-
 /*___________ MAIN CODE ___________*/
 void loop()
 {
@@ -122,20 +128,51 @@ void loop()
   stateFC3 = analogRead(pinFC3);
   stateFC4 = analogRead(pinFC4);
 
+  // Only to have 1 or 0 to limit sensor
+  if (stateFC1 < 200)
+  {
+    stateFC1=0;
+  }
+  else
+  {
+    stateFC1=1;
+  }
+
+  if (stateFC2 < 200)
+  {
+    stateFC2=0;
+  }
+  else
+  {
+    stateFC2=1;
+  }
+
+  if (stateFC3 < 200)
+  {
+    stateFC3=0;
+  }
+  else
+  {
+    stateFC3=1;
+  }
+
+  if (stateFC4 < 200)
+  {
+    stateFC4=0;
+  }
+  else
+  {
+    stateFC4=1;
+  }
+
   // READ SERIAL
   if (Serial.available()) // Test if the buffer is empty
   {
-
     ReceivedMessage = Serial.readStringUntil('e'); // Read serial port until character "e"
 
-    /*Serial.print("Message [");
-    Serial.print(ReceivedMessage);
-    Serial.println("]");*/
-    Serial.println(String(stateFC1)+"t"+String(stateFC2)+"t"+String(stateFC3)+"t"+String(stateFC4)+"t"+"111t222t333t444t555");
-
+    Serial.println(String(stateFC1)+" "+String(stateFC2)+" "+String(stateFC3)+" "+String(stateFC4)+" 111 222 333 444 555 e"); // Send values sensors
 
     ReceivedMessage.toCharArray(buffer, ReceivedMessage.length()); // Convert ReceivedMessage in char array
-
     sscanf(buffer, "%d%d%d%d%d%d%d%d%d%d e", &leftarmforward, &leftarmbackward, &rightarmforward, &rightarmbackward, &leftshoulderforward, &leftshoulderbackward, &rightshoulderforward, &rightshoulderbackward, &leftmotorspeed, &rightmotorspeed);
 
     // CONTROL LEFT ARM
