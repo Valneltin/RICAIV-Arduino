@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <LSM303.h>
 #include <Wire.h>
 
 /*___________ VARIABLES ___________*/
@@ -68,13 +69,18 @@ int pinFC4 = A3;
 int powerFC4 = 33;
 int stateFC4 = 0;
 
+float accz = 0;
+float accy = 0;
+float accx = 0;
+LSM303 compass;     // Create the Gyroscope
+
 /*___________ SET UP ___________*/
 void setup() {
 
     Serial.begin(9600); // Begin serial link
     Wire.begin();       // Begin wire link
-    //compass.init();
-    //compass.enableDefault();
+    compass.init();
+    compass.enableDefault();
 
     pinMode(pwmLM, OUTPUT);
     pinMode(dirLM, OUTPUT);
@@ -122,6 +128,15 @@ void motor(int pinpwm, int pindir, int speed)
 /*___________ MAIN CODE ___________*/
 void loop()
 {
+  // Gyroscope
+  compass.read(); // Read register of the gyroscope
+
+  accx = float(compass.a.x)*2/32767,0;  // Calculate the real value of acceleration by x
+  accy = float(compass.a.y)*2/32767,0;  // Calculate the real value of acceleration by y
+  accz = float(compass.a.z)*2/32767,0;  // Calculate the real value of acceleration by z
+  /* 2 is the highest value in 'g' (1g = 9,8m/s²)
+  32767 is the highest numeric value because the value is saved with 16bits and 2's complement*/
+
   // ARM SENSORS
   stateFC1 = analogRead(pinFC1);
   stateFC2 = analogRead(pinFC2);
@@ -170,7 +185,7 @@ void loop()
   {
     ReceivedMessage = Serial.readStringUntil('e'); // Read serial port until character "e"
 
-    Serial.println(String(stateFC1)+" "+String(stateFC2)+" "+String(stateFC3)+" "+String(stateFC4)+" 111 222 333 444 555 e"); // Send values sensors
+    Serial.println(String(stateFC1)+" "+String(stateFC2)+" "+String(stateFC3)+" "+String(stateFC4)+" "+String(accx)+" "+String(accy)+" "+String(accz)+" e"); // Send values of contact sensors and gyroscope sensor
 
     ReceivedMessage.toCharArray(buffer, ReceivedMessage.length()); // Convert ReceivedMessage in char array
     sscanf(buffer, "%d%d%d%d%d%d%d%d%d%d e", &leftarmforward, &leftarmbackward, &rightarmforward, &rightarmbackward, &leftshoulderforward, &leftshoulderbackward, &rightshoulderforward, &rightshoulderbackward, &leftmotorspeed, &rightmotorspeed);
